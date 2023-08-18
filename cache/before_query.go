@@ -1,17 +1,18 @@
 package cache
 
 import (
-	"encoding/json"
 	"errors"
-	"reflect"
 	"strconv"
 	"strings"
 
-	"github.com/Pacific73/gorm-cache/config"
-	"github.com/Pacific73/gorm-cache/util"
-	"github.com/go-redis/redis/v8"
+	"github.com/goccy/go-json"
+	"github.com/goccy/go-reflect"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 	"gorm.io/gorm/callbacks"
+
+	"github.com/3JoB/gorm-cache/config"
+	"github.com/3JoB/gorm-cache/util"
 )
 
 func BeforeQuery(cache *Gorm2Cache) func(db *gorm.DB) {
@@ -30,7 +31,6 @@ func BeforeQuery(cache *Gorm2Cache) func(db *gorm.DB) {
 		db.InstanceSet("gorm:cache:vars", db.Statement.Vars)
 
 		if util.ShouldCache(tableName, cache.Config.Tables) {
-
 			if cache.Config.CacheLevel == config.CacheLevelAll || cache.Config.CacheLevel == config.CacheLevelOnlySearch {
 				// search cache hit
 

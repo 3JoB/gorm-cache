@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/Pacific73/gorm-cache/config"
-	"github.com/Pacific73/gorm-cache/util"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
+
+	"github.com/3JoB/gorm-cache/config"
+	"github.com/3JoB/gorm-cache/util"
 )
 
 type RedisLayer struct {
@@ -133,7 +134,7 @@ func (r *RedisLayer) BatchDeleteKeys(ctx context.Context, keys []string) error {
 
 func (r *RedisLayer) BatchSetKeys(ctx context.Context, kvs []util.Kv) error {
 	if r.ttl == 0 {
-		spreads := make([]interface{}, 0, len(kvs))
+		spreads := make([]any, 0, len(kvs))
 		for _, kv := range kvs {
 			spreads = append(spreads, kv.Key)
 			spreads = append(spreads, kv.Value)

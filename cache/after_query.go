@@ -1,14 +1,15 @@
 package cache
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
 
-	"github.com/Pacific73/gorm-cache/config"
-	"github.com/Pacific73/gorm-cache/util"
+	"github.com/goccy/go-json"
 	"gorm.io/gorm"
+
+	"github.com/3JoB/gorm-cache/config"
+	"github.com/3JoB/gorm-cache/util"
 )
 
 func AfterQuery(cache *Gorm2Cache) func(db *gorm.DB) {
@@ -23,7 +24,7 @@ func AfterQuery(cache *Gorm2Cache) func(db *gorm.DB) {
 		sqlObj, _ := db.InstanceGet("gorm:cache:sql")
 		sql := sqlObj.(string)
 		varObj, _ := db.InstanceGet("gorm:cache:vars")
-		vars := varObj.([]interface{})
+		vars := varObj.([]any)
 
 		if util.ShouldCache(tableName, cache.Config.Tables) {
 			if db.Error == nil {

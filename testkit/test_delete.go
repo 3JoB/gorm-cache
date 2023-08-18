@@ -1,9 +1,10 @@
 package testkit
 
 import (
-	"github.com/Pacific73/gorm-cache/cache"
 	. "github.com/smartystreets/goconvey/convey"
 	"gorm.io/gorm"
+
+	"github.com/3JoB/gorm-cache/cache"
 )
 
 func testPrimaryDelete(cache *cache.Gorm2Cache, db *gorm.DB) {

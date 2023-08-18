@@ -3,14 +3,13 @@ package util
 import (
 	"fmt"
 	"math/rand"
-	"reflect"
 	"strings"
-	"time"
+
+	"github.com/goccy/go-reflect"
 )
 
 func GenInstanceId() string {
 	charList := []byte("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	rand.Seed(time.Now().Unix())
 	length := 5
 	str := make([]byte, 0)
 	for i := 0; i < length; i++ {
@@ -27,7 +26,7 @@ func GenPrimaryCachePrefix(instanceId string, tableName string) string {
 	return GormCachePrefix + ":" + instanceId + ":p:" + tableName
 }
 
-func GenSearchCacheKey(instanceId string, tableName string, sql string, vars ...interface{}) string {
+func GenSearchCacheKey(instanceId string, tableName string, sql string, vars ...any) string {
 	buf := strings.Builder{}
 	buf.WriteString(sql)
 	for _, v := range vars {

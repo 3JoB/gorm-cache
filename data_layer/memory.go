@@ -2,12 +2,13 @@ package data_layer
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
-	"github.com/Pacific73/gorm-cache/config"
-	"github.com/Pacific73/gorm-cache/util"
 	"github.com/karlseguin/ccache/v2"
+
+	"github.com/3JoB/gorm-cache/config"
+	"github.com/3JoB/gorm-cache/util"
 )
 
 type MemoryLayer struct {
@@ -45,7 +46,7 @@ func (m *MemoryLayer) KeyExists(ctx context.Context, key string) (bool, error) {
 func (m *MemoryLayer) GetValue(ctx context.Context, key string) (string, error) {
 	item := m.cache.Get(key)
 	if item == nil || item.Expired() {
-		return "", fmt.Errorf("cannot get item")
+		return "", errors.New("cannot get item")
 	}
 	return item.Value().(string), nil
 }
@@ -59,7 +60,7 @@ func (m *MemoryLayer) BatchGetValues(ctx context.Context, keys []string) ([]stri
 		}
 	}
 	if len(values) != len(keys) {
-		return nil, fmt.Errorf("cannot get items")
+		return nil, errors.New("cannot get items")
 	}
 	return values, nil
 }

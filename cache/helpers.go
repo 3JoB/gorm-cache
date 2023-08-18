@@ -56,7 +56,7 @@ func getPrimaryKeysFromWhereClause(db *gorm.DB) []string {
 		exprStruct, ok := expr.(clause.Expr)
 		if ok {
 			ttype := getExprType(exprStruct)
-			//fmt.Printf("expr: %+v, ttype: %s\n", exprStruct, ttype)
+			// fmt.Printf("expr: %+v, ttype: %s\n", exprStruct, ttype)
 			if ttype == "in" || ttype == "eq" {
 				fieldName := getColNameFromExpr(exprStruct, ttype)
 				if fieldName == dbName {
@@ -69,7 +69,7 @@ func getPrimaryKeysFromWhereClause(db *gorm.DB) []string {
 	return uniqueStringSlice(primaryKeys)
 }
 
-func getColNameFromColumn(col interface{}) string {
+func getColNameFromColumn(col any) string {
 	switch v := col.(type) {
 	case string:
 		return v
@@ -130,7 +130,7 @@ func hasOtherClauseExceptPrimaryField(db *gorm.DB) bool {
 
 func getExprType(expr clause.Expr) string {
 	// delete spaces
-	sql := strings.Replace(strings.ToLower(expr.SQL), " ", "", -1)
+	sql := strings.ReplaceAll(strings.ToLower(expr.SQL), " ", "")
 
 	// see if sql has more than one clause
 	hasConnector := strings.Contains(sql, "and") || strings.Contains(sql, "or")
@@ -157,7 +157,7 @@ func getExprType(expr clause.Expr) string {
 }
 
 func getColNameFromExpr(expr clause.Expr, ttype string) string {
-	sql := strings.Replace(strings.ToLower(expr.SQL), " ", "", -1)
+	sql := strings.ReplaceAll(strings.ToLower(expr.SQL), " ", "")
 	if ttype == "in" {
 		fields := strings.Split(sql, "in")
 		return fields[0]
@@ -169,7 +169,7 @@ func getColNameFromExpr(expr clause.Expr, ttype string) string {
 }
 
 func getPrimaryKeysFromExpr(expr clause.Expr, ttype string) []string {
-	sql := strings.Replace(strings.ToLower(expr.SQL), " ", "", -1)
+	sql := strings.ReplaceAll(strings.ToLower(expr.SQL), " ", "")
 
 	primaryKeys := make([]string, 0)
 
@@ -214,7 +214,7 @@ func getPrimaryKeysFromExpr(expr clause.Expr, ttype string) []string {
 	return primaryKeys
 }
 
-func getObjectsAfterLoad(db *gorm.DB) (primaryKeys []string, objects []interface{}) {
+func getObjectsAfterLoad(db *gorm.DB) (primaryKeys []string, objects []any) {
 	primaryKeys = make([]string, 0)
 	values := make([]reflect.Value, 0)
 
@@ -229,7 +229,7 @@ func getObjectsAfterLoad(db *gorm.DB) (primaryKeys []string, objects []interface
 		values = append(values, destValue)
 	}
 
-	var valueOf func(context.Context, reflect.Value) (value interface{}, zero bool) = nil
+	var valueOf func(context.Context, reflect.Value) (value any, zero bool) = nil
 	if db.Statement.Schema != nil {
 		for _, field := range db.Statement.Schema.Fields {
 			if field.PrimaryKey {
@@ -239,7 +239,7 @@ func getObjectsAfterLoad(db *gorm.DB) (primaryKeys []string, objects []interface
 		}
 	}
 
-	objects = make([]interface{}, 0, len(values))
+	objects = make([]any, 0, len(values))
 	for _, elemValue := range values {
 		if valueOf != nil {
 			primaryKey, isZero := valueOf(context.Background(), elemValue)
@@ -266,7 +266,7 @@ func uniqueStringSlice(slice []string) []string {
 	return retSlice
 }
 
-func extractStringsFromVar(v interface{}) []string {
+func extractStringsFromVar(v any) []string {
 	noPtrValue := reflect.Indirect(reflect.ValueOf(v))
 	switch noPtrValue.Kind() {
 	case reflect.Slice, reflect.Array:

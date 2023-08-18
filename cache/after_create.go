@@ -1,9 +1,10 @@
 package cache
 
 import (
-	"github.com/Pacific73/gorm-cache/config"
-	"github.com/Pacific73/gorm-cache/util"
 	"gorm.io/gorm"
+
+	"github.com/3JoB/gorm-cache/config"
+	"github.com/3JoB/gorm-cache/util"
 )
 
 func AfterCreate(cache *Gorm2Cache) func(db *gorm.DB) {

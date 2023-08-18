@@ -1,15 +1,16 @@
 package cache
 
 import (
-	"fmt"
+	"errors"
 
-	"github.com/Pacific73/gorm-cache/config"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
+
+	"github.com/3JoB/gorm-cache/config"
 )
 
 func NewGorm2Cache(cacheConfig *config.CacheConfig) (*Gorm2Cache, error) {
 	if cacheConfig == nil {
-		return nil, fmt.Errorf("you pass a nil config")
+		return nil, errors.New("you pass a nil config")
 	}
 	cache := &Gorm2Cache{
 		Config: cacheConfig,
