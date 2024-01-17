@@ -3,10 +3,11 @@ package cache
 import (
 	"context"
 	"fmt"
-	"reflect"
+	erf "reflect"
 	"strconv"
 	"strings"
 
+	"github.com/goccy/go-reflect"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -217,6 +218,7 @@ func getPrimaryKeysFromExpr(expr clause.Expr, ttype string) []string {
 func getObjectsAfterLoad(db *gorm.DB) (primaryKeys []string, objects []any) {
 	primaryKeys = make([]string, 0)
 	values := make([]reflect.Value, 0)
+	isPluck := false
 
 	destValue := reflect.Indirect(reflect.ValueOf(db.Statement.Dest))
 	switch destValue.Kind() {
@@ -225,11 +227,14 @@ func getObjectsAfterLoad(db *gorm.DB) (primaryKeys []string, objects []any) {
 			elem := destValue.Index(i)
 			values = append(values, elem)
 		}
+		if isBasicType(destValue.Type().Elem().Kind()) {
+			isPluck = true
+		}
 	case reflect.Struct:
 		values = append(values, destValue)
 	}
 
-	var valueOf func(context.Context, reflect.Value) (value any, zero bool) = nil
+	var valueOf func(context.Context, erf.Value) (value any, zero bool) = nil
 	if db.Statement.Schema != nil {
 		for _, field := range db.Statement.Schema.Fields {
 			if field.PrimaryKey {
@@ -241,8 +246,8 @@ func getObjectsAfterLoad(db *gorm.DB) (primaryKeys []string, objects []any) {
 
 	objects = make([]any, 0, len(values))
 	for _, elemValue := range values {
-		if valueOf != nil {
-			primaryKey, isZero := valueOf(context.Background(), elemValue)
+		if valueOf != nil && !isPluck {
+			primaryKey, isZero := valueOf(context.Background(), reflect.ToReflectValue(elemValue))
 			if isZero {
 				continue
 			}
@@ -251,6 +256,10 @@ func getObjectsAfterLoad(db *gorm.DB) (primaryKeys []string, objects []any) {
 		objects = append(objects, elemValue.Interface())
 	}
 	return primaryKeys, objects
+}
+
+func isBasicType(k reflect.Kind) bool {
+	return (k > 0 && k < reflect.Array) || (k == reflect.String)
 }
 
 func uniqueStringSlice(slice []string) []string {
